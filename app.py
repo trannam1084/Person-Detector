@@ -30,7 +30,7 @@ st.set_page_config(
     layout="centered",
 )
 
-# ==== Custom CSS cho giao diện sạch và đẹp hơn ====
+
 st.markdown(
     """
     <style>
@@ -38,11 +38,16 @@ st.markdown(
             padding-top: 2rem;
         }
         .stApp {
-            background: radial-gradient(circle at top left, #1f2933 0, #111827 45%, #020617 100%);
-            color: #e5e7eb;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 55%, #f1f5f9 100%);
+            color: #0f172a;
         }
         h1, h2, h3 {
-            color: #f9fafb !important;
+            color: #0f172a !important;
+        }
+        /* làm nhẹ header của sidebar */
+        [data-testid="stSidebar"] {
+            background: #ffffff;
+            border-right: 1px solid rgba(15, 23, 42, 0.08);
         }
         .stButton>button {
             background: linear-gradient(90deg, #22c55e, #16a34a);
@@ -58,8 +63,9 @@ st.markdown(
         .prob-box {
             padding: 1rem 1.25rem;
             border-radius: 0.75rem;
-            background: rgba(15,23,42,0.9);
-            border: 1px solid rgba(148,163,184,0.3);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(15, 23, 42, 0.10);
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
         }
         .label-pill {
             display: inline-flex;
@@ -71,14 +77,14 @@ st.markdown(
             letter-spacing: 0.03em;
         }
         .label-person {
-            background: rgba(34,197,94,0.1);
-            color: #bbf7d0;
-            border: 1px solid rgba(34,197,94,0.6);
+            background: rgba(34,197,94,0.12);
+            color: #14532d;
+            border: 1px solid rgba(34,197,94,0.45);
         }
         .label-nonperson {
-            background: rgba(248,113,113,0.1);
-            color: #fecaca;
-            border: 1px solid rgba(248,113,113,0.6);
+            background: rgba(248,113,113,0.12);
+            color: #7f1d1d;
+            border: 1px solid rgba(248,113,113,0.45);
         }
         footer {visibility: hidden;}
     </style>
@@ -86,39 +92,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ==== Sidebar thông tin ====
-with st.sidebar:
-    st.markdown("### ⚙️ Cấu hình")
-    threshold = st.slider(
-        "Ngưỡng phân loại (threshold)",
-        min_value=0.1,
-        max_value=0.9,
-        value=0.5,
-        step=0.05,
-        help="Nếu xác suất ≥ threshold → PERSON, ngược lại → NON-PERSON.",
-    )
 
-    st.markdown("---")
-    st.markdown("### 👤 Thông tin")
-    st.markdown("**TRẦN HẢI NAM - 223332840**")
-    st.caption("Bài tập: Nhận diện ảnh có người / không có người bằng TensorFlow/Keras & EfficientNetB0.")
+st.title("🧑 _:blue[Person Detector]_")
+st.markdown("**TRẦN HẢI NAM - 223332840**")
 
-    st.markdown("---")
-    st.caption("Model: EfficientNetB0 (fine-tuned) · Input 224x224 · Binary classification.")
-
-# ==== Tiêu đề chính ====
-st.markdown("## 🧑‍🤝‍🧑 Person Detector")
-st.write(
-    "Tải lên một ảnh bất kỳ (jpg / png). Ứng dụng sẽ dự đoán **ảnh có chứa người hay không** "
-    "dựa trên mô hình học sâu đã được huấn luyện trên COCO (person vs non-person)."
-)
 
 model = load_model()
 
 uploaded_file = st.file_uploader(
-    "Chọn ảnh cần kiểm tra",
+    "Chọn ảnh",
     type=["jpg", "jpeg", "png"],
-    help="Kích thước và tỉ lệ ảnh sẽ được tự động resize về 224x224.",
 )
 
 col_img, col_result = st.columns([3, 2])
@@ -126,54 +109,34 @@ col_img, col_result = st.columns([3, 2])
 with col_img:
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        st.image(image, caption="Ảnh đã tải lên", use_column_width=True)
-    else:
-        st.markdown("#### 📷 Hướng dẫn")
-        st.write(
-            "- Chọn một ảnh chụp người, đường phố, cảnh vật, v.v.\n"
-            "- Hệ thống sẽ trả về nhãn **PERSON** hoặc **NON-PERSON** cùng xác suất."
-        )
+        st.image(image)
+
 
 with col_result:
     if uploaded_file is not None:
-        predict_btn = st.button("🚀 Predict")
+        predict_btn = st.button("Dự đoán")
 
         if predict_btn:
             with st.spinner("Đang dự đoán..."):
-                start_time = time.time()
                 input_data = preprocess_image(image)
                 prob = float(model.predict(input_data)[0][0])
-                infer_time = (time.time() - start_time) * 1000  # ms
 
-                is_person = prob >= threshold
+                is_person = prob >= 0.5
                 label = "PERSON" if is_person else "NON-PERSON"
                 css_label_class = "label-person" if is_person else "label-nonperson"
+                confidence = prob if is_person else 1.0 - prob
 
             st.markdown(
                 f"""
                 <div class="prob-box">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                        <span style="color:#9ca3af;">Kết quả phân loại</span>
+                        <span style="color:#64748b;">Kết quả phân loại</span>
                         <span class="label-pill {css_label_class}">{label}</span>
+                    </div>
+                    <div style="margin-top:0.25rem;font-size:0.9rem;color:#475569;">
+                        Độ tin cậy: {confidence * 100:.1f}%
                     </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-
-            st.markdown("#### 🔢 Xác suất")
-            st.progress(prob if prob <= 1 else 1.0, text=f"p(person) = {prob:.4f}")
-
-            st.markdown(
-                f"- **Ngưỡng hiện tại**: `{threshold:.2f}`  "
-                f"- **p(person)**: `{prob:.4f}`  \n"
-                f"- **Thời gian suy luận**: `{infer_time:.1f} ms`"
-            )
-    else:
-        st.info("👆 Hãy tải một ảnh lên để thực hiện dự đoán.")
-
-st.markdown("---")
-st.markdown(
-    "*Ứng dụng xây dựng bằng **Streamlit** và **TensorFlow/Keras (EfficientNetB0)**. "
-    "Model được huấn luyện trên tập dữ liệu COCO (person vs non-person).*"
-)
