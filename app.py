@@ -1,4 +1,3 @@
-from turtle import color
 import streamlit as st
 import tensorflow as tf
 from tensorflow import keras
@@ -48,6 +47,8 @@ st.markdown("---")
 
 if "upload_result" not in st.session_state:
     st.session_state.upload_result = None
+if "last_uploaded_file" not in st.session_state:
+    st.session_state.last_uploaded_file = None
 
 col_img, col_result = st.columns([3, 2])
 
@@ -60,7 +61,12 @@ with col_img:
     )
 
     if uploaded_file is not None:
-        image = Image.open(uploaded_file).convert("RGB")
+        current_file_name = uploaded_file.name
+        if st.session_state.last_uploaded_file != current_file_name:
+            st.session_state.upload_result = None
+            st.session_state.last_uploaded_file = current_file_name
+
+        image = Image.open(uploaded_file)
         st.image(image)
 
         if st.button("🔍 Dự đoán", type="primary", use_container_width=True):
@@ -68,6 +74,9 @@ with col_img:
                 img_array = preprocess_image(image)
                 prob = float(model.predict(img_array, verbose=0)[0][0])
                 st.session_state.upload_result = prob
+    else:
+        st.session_state.upload_result = None
+        st.session_state.last_uploaded_file = None
 
 with col_result:
     st.markdown("#### 📊 Kết quả dự đoán")
