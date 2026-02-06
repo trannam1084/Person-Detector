@@ -38,7 +38,7 @@ def show_result(prob):
         st.warning("**🚫 NON-PERSON**")
 
     st.metric(
-        label="### 🎯 Độ tin cậy",
+        label="🎯 Độ tin cậy",
         value=f"{confidence * 100:.1f}%")
 
 st.title("👤 _:blue[Person Detector]_")
@@ -53,7 +53,7 @@ if "last_uploaded_file" not in st.session_state:
 col_img, col_result = st.columns([3, 2])
 
 with col_img:
-    st.markdown("##### 🖼️ Chọn ảnh")
+    st.markdown("#### 🖼️ Chọn ảnh")
     uploaded_file = st.file_uploader(
         "Chọn ảnh...",
         type=["jpg", "jpeg", "png"],
