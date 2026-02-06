@@ -38,7 +38,7 @@ def show_result(prob):
         st.warning("**🚫 NON-PERSON**")
 
     st.metric(
-        label="🎯 Độ tin cậy",
+        label="### 🎯 Độ tin cậy",
         value=f"{confidence * 100:.1f}%")
 
 st.title("👤 _:blue[Person Detector]_")
