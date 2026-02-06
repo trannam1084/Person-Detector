@@ -1,3 +1,4 @@
+from turtle import color
 import streamlit as st
 import tensorflow as tf
 from tensorflow import keras
@@ -48,16 +49,16 @@ st.markdown("---")
 if "upload_result" not in st.session_state:
     st.session_state.upload_result = None
 
-st.markdown("##### 🖼️ Chọn ảnh")
-uploaded_file = st.file_uploader(
-    "Chọn ảnh...",
-    type=["jpg", "jpeg", "png"],
-    label_visibility="collapsed"
-)
-
 col_img, col_result = st.columns([3, 2])
 
 with col_img:
+    st.markdown("##### 🖼️ Chọn ảnh")
+    uploaded_file = st.file_uploader(
+        "Chọn ảnh...",
+        type=["jpg", "jpeg", "png"],
+        label_visibility="collapsed"
+    )
+
     if uploaded_file is not None:
         image = Image.open(uploaded_file).convert("RGB")
         st.image(image)
@@ -70,6 +71,6 @@ with col_img:
 
 with col_result:
     st.markdown("#### 📊 Kết quả dự đoán")
-    with st.container(border=False):
+    with st.container(border=True):
         if st.session_state.upload_result is not None:
             show_result(st.session_state.upload_result)
