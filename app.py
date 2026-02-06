@@ -70,6 +70,6 @@ with col_img:
 
 with col_result:
     st.markdown("#### 📊 Kết quả dự đoán")
-    with st.container(border=True):
+    with st.container(border=False):
         if st.session_state.upload_result is not None:
             show_result(st.session_state.upload_result)
